@@ -115,30 +115,40 @@ export default function Login() {
         }
       );
 
-      const user = res.data.user;
+    
+const user = res.data.user;
 
-      console.log("LOGIN RESPONSE:", res.data);
+console.log("LOGIN RESPONSE:", res.data);
 
-      // ✅ Store only safe data
-      localStorage.setItem("user", JSON.stringify(user));
+// Save token AND user
+if (!res.data.token || !user) {
+  alert("Login response is missing token or user data");
+  return;
+}
 
-      const departments = Array.isArray(user.departments)
-        ? user.departments
-        : [user.departments];
+localStorage.setItem("token", res.data.token);
+localStorage.setItem("user", JSON.stringify(user));
 
-      // ✅ Redirect
-      if (departments.includes("Admin")) {
-        navigate("/admin");
-      } else if (departments.includes("Employee")) {
-        navigate("/employee");
-      } else {
-        alert("No dashboard access");
-      }
+const departments = Array.isArray(user.departments)
+  ? user.departments
+  : user.departments
+    ? [user.departments]
+    : [];
 
-    } catch (err) {
-      console.error(err);
-      alert("Invalid email or password");
-    }
+console.log("Saved token:", !!localStorage.getItem("token"));
+console.log("Departments:", departments);
+
+// Redirect after saving authentication data
+if (departments.some((dep) => dep?.toLowerCase() === "admin")) {
+  navigate("/admin", { replace: true });
+} else if (
+  departments.some((dep) => dep?.toLowerCase() === "employee")
+) {
+  navigate("/employee", { replace: true });
+} else {
+  alert("No dashboard access for this department");
+}
+
   };
 
   return (
