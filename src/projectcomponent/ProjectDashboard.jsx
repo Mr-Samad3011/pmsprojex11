@@ -4,7 +4,7 @@ import axios from "axios";
 import GroupTargetModal from "../pages/admin/GroupTargetModal";
 import EditProjectModal from "../pages/admin/EditProjectModal";
 import ProjectDiscription from "./ProjectDiscription";
-import RedirectUrlsModal from "./redirecturlModal";
+import RedirectUrlsModal from "./RedirecturlModal";
 import GroupCard from "./GroupCard";
 import { FaPlay, FaPause, FaCheck } from "react-icons/fa";
 import {
