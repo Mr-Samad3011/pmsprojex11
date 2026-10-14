@@ -101,6 +101,77 @@ app.get("/api/csrf-token", csrfProtection, (req, res) => {
   });
 });
 
+
+app.get("/api/languages", async (req, res) => {
+  try {
+    const apiKey = process.env.REST_COUNTRIES_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        message: "REST_COUNTRIES_API_KEY is missing in .env",
+      });
+    }
+
+    const allLanguages = new Set();
+
+    // REST Countries v5: fetch up to 100 countries per page
+    for (let offset = 0; ; offset += 100) {
+      const url = new URL(
+        "https://api.restcountries.com/countries/v5"
+      );
+
+      url.searchParams.set("limit", "100");
+      url.searchParams.set("offset", String(offset));
+      url.searchParams.set("response_fields", "languages");
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("REST Countries error:", result);
+
+        return res.status(502).json({
+          message: "External languages API failed",
+          details: result,
+        });
+      }
+
+      const countries = result?.data?.objects;
+
+      if (!Array.isArray(countries)) {
+        return res.status(502).json({
+          message: "Invalid response from REST Countries API",
+        });
+      }
+
+      for (const country of countries) {
+        for (const language of country.languages ?? []) {
+          if (language.name) {
+            allLanguages.add(language.name);
+          }
+        }
+      }
+
+      if (countries.length < 100) break;
+    }
+
+    return res.json(
+      [...allLanguages].sort((a, b) => a.localeCompare(b))
+    );
+  } catch (error) {
+    console.error("Languages API error:", error);
+
+    return res.status(500).json({
+      message: "Unable to fetch languages",
+    });
+  }
+});
+
 // ================= SOCKET.IO =================
 const io = new Server(server, {
   cors: {
