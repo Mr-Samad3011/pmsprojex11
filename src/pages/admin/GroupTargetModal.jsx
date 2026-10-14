@@ -90,23 +90,39 @@ export default function GroupTargetModal({ isOpen, project, onClose, onCreate })
 }, [isOpen]);
 
   // Fetch languages from API
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const res = await fetch("https://restcountries.com/v3.1/all?fields=languages");
-        if (!res.ok) throw new Error("Language API response not OK");
-        const data = await res.json();
-        const allLanguages = new Set();
-        data.forEach((country) => {
-          if (country.languages) Object.values(country.languages).forEach((lang) => allLanguages.add(lang));
-        });
-        setLanguages(Array.from(allLanguages).sort());
-      } catch (error) {
-        console.error("Language fetch error:", error);
+useEffect(() => {
+  if (!isOpen) return;
+
+  const fetchLanguages = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/languages`);
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        console.error("Languages API error details:", result);
+
+        throw new Error(
+          result.details ||
+          result.message ||
+          `API failed: ${response.status}`
+        );
       }
-    };
-    fetchLanguages();
-  }, []);
+
+      if (!Array.isArray(result)) {
+        throw new Error("Invalid API response: Expected an array of languages");
+      }
+
+      setLanguages(result);
+    } catch (error) {
+      console.error("Language fetch error:", error.message);
+      setLanguages([]);
+    }
+  };
+
+  fetchLanguages();
+}, [isOpen, BASE_URL]);
+  
 
   if (!isOpen) return null;
 
