@@ -158,6 +158,21 @@ export default function CreateProject({ setActivePage }) {
     return typeof contact === "string" ? contact : contact.value;
   };
 
+  const getUserLabel = (u) => {
+  const firstName = u.firstName || "";
+  const lastName = u.lastName || "";
+
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  return (
+    fullName ||
+    u.name ||
+    u.username ||
+    u.email ||
+    "Unnamed User"
+  );
+};
+
   /* ================= SUBMIT ================= */
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -351,7 +366,7 @@ const handleSubmit = async (e) => {
         </TwoCol>
 
         <TwoCol>
-          <Choose
+          {/* <Choose
             label="Project Manager"
             value={form.projectManager}
             options={users.map((u) => ({
@@ -369,7 +384,32 @@ const handleSubmit = async (e) => {
               label: `${u.firstName} ${u.lastName}`,
             }))}
             onChange={(v) => setForm({ ...form, salesContact: v })}
-          />
+          /> */}
+          
+<Choose
+  label="Project Manager"
+  value={form.projectManager}
+  options={users.map((u) => ({
+    value: u._id,
+    label: getUserLabel(u),
+  }))}
+  onChange={(v) =>
+    setForm({ ...form, projectManager: v })
+  }
+/>
+
+<Choose
+  label="Sales Contact"
+  value={form.salesContact}
+  options={users.map((u) => ({
+    value: u._id,
+    label: getUserLabel(u),
+  }))}
+  onChange={(v) =>
+    setForm({ ...form, salesContact: v })
+  }
+/>
+
         </TwoCol>
 
         <TwoCol>
