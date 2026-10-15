@@ -7,29 +7,53 @@ export default function SurveyLinksModal({ groupId, onClose }) {
 
   const [survey, setSurvey] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!groupId) return;
+useEffect(() => {
+  if (!groupId) {
+    setLoading(false);
+    setError("Group ID is missing.");
+    return;
+  }
 
-    const fetchSurvey = async () => {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/api/surveys/group/${groupId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+  const fetchSurvey = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/api/surveys/group/${groupId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSurvey(res.data?.survey ?? res.data ?? null);
+    } catch (err) {
+      console.error("Failed to fetch survey:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+
+      setSurvey(null);
+
+      if (err.response?.status === 404) {
+        setError(
+          "Survey endpoint ya is group ka survey record nahi mila. Backend route aur saved survey data check karein."
         );
-
-        setSurvey(res.data);
-      } catch (err) {
-        console.error("Failed to fetch survey:", err);
-      } finally {
-        setLoading(false);
+      } else {
+        setError("Survey links load nahi ho sake. Please try again.");
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchSurvey();
-  }, [groupId]);
+  fetchSurvey();
+}, [groupId, BASE_URL, token]);
 
   if (loading) {
     return (
