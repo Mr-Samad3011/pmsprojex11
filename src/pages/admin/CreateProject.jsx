@@ -55,20 +55,38 @@ export default function CreateProject({ setActivePage }) {
   //   }
   // };
 
-  const fetchUsers = async () => {
+  
+const fetchUsers = async () => {
   try {
-    const res = await axios.get("/api/admin/employees", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await axios.get(
+      `${BASE_URL}/api/admin/employees`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    // Flatten grouped object
-    const usersArray = Object.values(res.data).flat(); // flat() merges arrays
+    const data = res.data;
 
-    setUsers(usersArray); // now users is an array
+    // Handle array or grouped employee response
+    const usersArray = Array.isArray(data)
+      ? data
+      : Object.values(data || {}).flat();
+
+    console.log("Employees API response:", data);
+    console.log("Normalized users:", usersArray);
+
+    setUsers(usersArray);
   } catch (err) {
-    console.error(err);
+    console.error(
+      "Failed to fetch employees:",
+      err.response?.data || err.message
+    );
+    setUsers([]);
   }
 };
+
 
   /* ================= OPTIONS ================= */
   const audience = [
@@ -158,20 +176,25 @@ export default function CreateProject({ setActivePage }) {
     return typeof contact === "string" ? contact : contact.value;
   };
 
-  const getUserLabel = (u) => {
-  const firstName = u.firstName || "";
-  const lastName = u.lastName || "";
+  
+const getUserLabel = (u) => {
+  const user = u.user || u.employee || u;
+
+  const firstName = user.firstName || "";
+  const lastName = user.lastName || "";
 
   const fullName = `${firstName} ${lastName}`.trim();
 
   return (
     fullName ||
-    u.name ||
-    u.username ||
-    u.email ||
+    user.fullName ||
+    user.name ||
+    user.username ||
+    user.email ||
     "Unnamed User"
   );
 };
+
 
   /* ================= SUBMIT ================= */
   // const handleSubmit = async (e) => {
