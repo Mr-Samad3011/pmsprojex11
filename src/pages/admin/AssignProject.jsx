@@ -56,23 +56,59 @@ const getCsrfToken = async () => {
 
   /* ================= FETCH ================= */
 
-  const fetchProjects = async () => {
-    try {
-      const res = await axios.get("/api/admin/projects/all", authHeader);
-      setProjects(res.data.projects || []);
-    } catch (err) {
-      console.error("Fetch projects failed", err);
-    }
-  };
+ 
+const fetchProjects = async () => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/api/admin/projects/all`,
+      authHeader
+    );
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get("/api/admin/employees", authHeader);
-      setEmployees(res.data || []);
-    } catch (err) {
-      console.error("Fetch employees failed", err);
-    }
-  };
+    console.log("Projects API response:", res.data);
+
+    const projectsData = Array.isArray(res.data)
+      ? res.data
+      : res.data?.projects || [];
+
+    setProjects(projectsData);
+  } catch (err) {
+    console.error(
+      "Fetch projects failed:",
+      err.response?.status,
+      err.response?.data || err.message
+    );
+    setProjects([]);
+  }
+};
+
+
+const fetchEmployees = async () => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/api/admin/employees`,
+      authHeader
+    );
+
+    console.log("Employees API response:", res.data);
+
+    const data = Array.isArray(res.data)
+      ? res.data
+      : Array.isArray(res.data?.employees)
+        ? res.data.employees
+        : Object.values(res.data || {}).flat();
+
+    setEmployees(data);
+    return data;
+  } catch (err) {
+    console.error(
+      "Fetch employees failed:",
+      err.response?.data || err.message
+    );
+    setEmployees([]);
+    return [];
+  }
+};
+
 
   const fetchHistory = async () => {
     try {
